@@ -36,7 +36,7 @@ export interface CampaignResult {
   totalClicks: number;
   totalSpend: number;
   totalConversions: number;
-  ctr: number;
+  ctr: number | null;
   cpa: number | null;
 }
 

@@ -79,7 +79,7 @@ export class CSVProcessor {
       r.totalClicks.toString(),
       this.formatNumber(r.totalSpend, 2),
       r.totalConversions.toString(),
-      this.formatNumber(r.ctr, 4),
+      r.ctr !== null ? this.formatNumber(r.ctr, 4) : '',
       r.cpa !== null ? this.formatNumber(r.cpa, 2) : '',
     ]);
 
@@ -185,9 +185,10 @@ export class CSVProcessor {
       this.onProgress(fileSize, fileSize);
     }
 
-    // Generate top 10 results
-    const top10CTR = this.aggregator.getTopNCampaignsByCTR(10);
-    const top10CPA = this.aggregator.getTopNCampaignsByCPA(10);
+    // Generate top 10 results - calculate CTR/CPA once, reuse for both
+    const allResults = this.aggregator.getAllResults();
+    const top10CTR = this.aggregator.getTopNCampaignsByCTR(10, allResults);
+    const top10CPA = this.aggregator.getTopNCampaignsByCPA(10, allResults);
 
     // Write output files
     const ctrOutputPath = path.join(this.options.output, 'top10_ctr.csv');

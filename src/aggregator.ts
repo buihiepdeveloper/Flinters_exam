@@ -70,43 +70,59 @@ export class CampaignAggregator {
   }
 
   /**
-   * Convert campaign metrics to result with calculated CTR and CPA
+   * Convert campaign metrics to result with pre-calculated CTR and CPA
    * 
    * @param campaignId - Campaign ID
    * @param metrics - Aggregated metrics
+   * @param ctr - Pre-calculated CTR
+   * @param cpa - Pre-calculated CPA
    * @returns Campaign result with all metrics
    */
-  private metricsToResult(campaignId: string, metrics: CampaignMetrics): CampaignResult {
+  private metricsToResult(
+    campaignId: string,
+    metrics: CampaignMetrics,
+    ctr: number | null,
+    cpa: number | null
+  ): CampaignResult {
     return {
       campaignId,
       totalImpressions: metrics.totalImpressions,
       totalClicks: metrics.totalClicks,
       totalSpend: metrics.totalSpend,
       totalConversions: metrics.totalConversions,
-      ctr: this.calculateCTR(metrics) ?? 0,
-      cpa: this.calculateCPA(metrics),
+      ctr,
+      cpa,
     };
+  }
+
+  /**
+   * Get all campaign results with pre-calculated CTR and CPA
+   * Single pass through campaignMap - calculates CTR/CPA once per campaign
+   * 
+   * @returns Array of all campaign results
+   */
+  public getAllResults(): CampaignResult[] {
+    return Array.from(this.campaignMap.entries()).map(([campaignId, metrics]) => {
+      const ctr = this.calculateCTR(metrics);
+      const cpa = this.calculateCPA(metrics);
+      return this.metricsToResult(campaignId, metrics, ctr, cpa);
+    });
   }
 
   /**
    * Get top N campaigns by CTR (highest first)
    * Only includes campaigns with valid CTR (impressions > 0)
    * 
+   * @param allResults - Pre-calculated results (optional, will compute if not provided)
    * @param n - Number of top campaigns to return (default: 10)
    * @returns Array of top N campaigns sorted by CTR descending
    */
-  public getTopNCampaignsByCTR(n: number = 10): CampaignResult[] {
-    const results: CampaignResult[] = [];
-
-    for (const [campaignId, metrics] of this.campaignMap) {
-      const ctr = this.calculateCTR(metrics);
-      if (ctr === null) continue;
-
-      results.push(this.metricsToResult(campaignId, metrics));
-    }
-
+  public getTopNCampaignsByCTR(n: number = 10, allResults?: CampaignResult[]): CampaignResult[] {
+    const results = allResults ?? this.getAllResults();
+    
     return results
-      .sort((a, b) => b.ctr - a.ctr)
+      .filter(r => r.ctr !== null) // Only valid CTR (impressions > 0)
+      .sort((a, b) => (b.ctr as number) - (a.ctr as number)) // Descending: highest CTR first
       .slice(0, n);
   }
 
@@ -114,22 +130,15 @@ export class CampaignAggregator {
    * Get top N campaigns by CPA (lowest first)
    * Only includes campaigns with valid CPA (conversions > 0)
    * 
+   * @param allResults - Pre-calculated results (optional, will compute if not provided)
    * @param n - Number of top campaigns to return (default: 10)
    * @returns Array of top N campaigns sorted by CPA ascending
    */
-  public getTopNCampaignsByCPA(n: number = 10): CampaignResult[] {
-    const results: CampaignResult[] = [];
-
-    for (const [campaignId, metrics] of this.campaignMap) {
-      const cpa = this.calculateCPA(metrics);
-      if (cpa === null) continue;
-
-      results.push(this.metricsToResult(campaignId, metrics));
-    }
-
-    // Sort by CPA ascending (lowest first)
-    // Note: cpa is guaranteed to be non-null here due to filter above
+  public getTopNCampaignsByCPA(n: number = 10, allResults?: CampaignResult[]): CampaignResult[] {
+    const results = allResults ?? this.getAllResults();
+    
     return results
+      .filter(r => r.cpa !== null) // Only valid CPA (conversions > 0)
       .sort((a, b) => (a.cpa as number) - (b.cpa as number))
       .slice(0, n);
   }

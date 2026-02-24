@@ -184,7 +184,6 @@ docker run --rm ad-performance-aggregator --help
 - [x] Meaningful error messages
 
 ---
-
 ## 🧪 3. Unit Tests
 
 ### 3.1. Test CSVParser ✅
@@ -228,6 +227,9 @@ docker run --rm ad-performance-aggregator --help
 ### 3.4. Test StatsFormatter ✅
 - [x] Test format() với valid stats
 - [x] Test format() với edge cases
+
+### 3.5. Coverage Requirements ✅
+- [x] 100% Line Coverage
 
 ### 3.5. Coverage Results ✅
 
