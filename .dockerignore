@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Test files
+coverage/
+src/__tests__/
+*.test.ts
+jest.config.js
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Environment files
+.env
+.env.*
+
+# Data files (will be mounted as volumes)
+*.csv
+results/
+
+# Misc
+.dockerignore
+Dockerfile
+docker-compose.yml
